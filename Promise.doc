@@ -1,0 +1,32 @@
+🔑 Summary of Promise Combinators
+
+Promise.all → Waits for all success, fails fast on first rejection.
+
+Promise.allSettled → Waits for all, gives results of both success/fail.
+
+Promise.race → First settled (resolve or reject) decides outcome.
+
+Promise.any → First success wins, fails only if all reject.
+
+
+🔑 Key Concept
+
+Promise.all([p1, p2, ...]) runs all Promises in parallel.
+
+It waits until all are resolved.
+
+If even one rejects, the whole thing rejects immediately.
+
+
+
+🔹 Promise.any()
+
+Similar to Promise.race, but it only cares about the first successful (fulfilled) promise.
+
+If all promises fail, it rejects with an AggregateError (special error containing all the reasons).
+
+
+🔹 2. Promise.allSettled()
+
+This waits for all promises to finish, no matter if they resolve or reject.
+It returns an array of objects with {status, value} or {status, reason}.
