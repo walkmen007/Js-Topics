@@ -1,0 +1,104 @@
+🔹 1. What is async?
+
+If you mark a function with async, it always returns a Promise.
+
+Even if you return a normal value, JavaScript wraps it in a Promise.
+
+
+Example : 
+async function hello() {
+    return "Hello, Async!";
+}
+
+hello().then(console.log);
+
+Output: Hello, Async!
+
+So async function is just syntactic sugar for returning a Promise.
+
+
+
+
+
+🔹 2. What is await?
+
+await pauses the execution of the async function until the Promise resolves.
+
+It can only be used inside async functions.
+
+Instead of .then(), you just write await.
+
+Example (Promise + then):
+
+function delayHello() {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve("Hello after 2s"), 2000);
+    });
+}
+
+delayHello().then(msg => console.log(msg));
+
+With Async/wait
+
+async function greet() {
+    let msg = await delayHello();
+    console.log(msg); // "Hello after 2s"
+}
+
+greet();
+
+
+
+
+🔹 3. Error Handling with try...catch
+
+With .catch() you handle errors.
+With async/await, you use try...catch.
+
+Example: 
+
+
+function failAfter1s() {
+    return new Promise((_, reject) => {
+        setTimeout(() => reject("❌ Something went wrong!"), 1000);
+    });
+}
+
+async function test() {
+    try {
+        let result = await failAfter1s();
+        console.log(result);
+    } catch (err) {
+        console.log("Caught error:", err);
+    }
+}
+
+test();
+
+
+Output: 
+Caught error: ❌ Something went wrong!
+
+
+
+🔑 Key Points
+
+async makes a function return a Promise.
+
+await waits for a Promise to settle (like .then(), but cleaner).
+
+Use try...catch for error handling.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
