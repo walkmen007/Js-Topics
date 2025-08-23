@@ -1,0 +1,159 @@
+❓ Question 1 (Easy)
+
+👉 What is the difference between a Promise and a callback?
+
+My Answer : Promise is use to do async operations. where as callback are function, which we can pass to as an argument in function body. callback simply take the referance of original function and we can execute where we like. Promise is generally use in api calling or handling async operation from setTimeout etc. Both are link in a way, when a promise is resolved or reject callback function we passed will get execute. Without callback function promise wont work.
+
+
+Actual Answer : ✅ Improved Answer:
+
+A callback is simply a function passed as an argument to another function, which is then executed later. It’s a more manual way of handling asynchronous work.
+
+A Promise is an object that represents the eventual result of an asynchronous operation. Instead of relying purely on callbacks, it provides methods like .then(), .catch(), and .finally() to handle results in a cleaner way.
+
+Promises help avoid callback hell and make asynchronous code easier to read and manage.
+
+Internally, promises do use callbacks behind the scenes, but they provide a structured and chainable API that makes async flow much more readable.
+
+
+⭐ Interview Tip: If you say “Promises won’t work without callbacks”, that’s technically true internally, but in an interview you should emphasize that Promises abstract away the messy callback handling from the developer.
+
+
+
+Que2. 👉 What are the differences between Promise.all(), Promise.allSettled(), Promise.race(), and Promise.any()?
+
+My Ans: All the promise type are use in different way in order to do async operation. In case of multipal promise or async calls. we generally prefer the above promise methods. Based on use case: Promise.all() : This is use when we want all promise get successfully resolved. if any of the promise get failed, it will give combine result as rejected. Promise.AllSettled(): This is use when we want all promise to complete whether it get resolved or rejected. Combine result of all will come which include rejected and resolved promises. Promise.race(): This is use when we want first promise get completed whether resolved or rejected. race condition between different promises which are passed. Promise.race () get settled once the execution of any once completed. Promise.any() : this is use when any of the promises get resolved success.
+
+
+Improved Version: 
+Let me refine a bit with interview-level clarity:
+
+Promise.all() ✅
+
+Waits for all promises to fulfill.
+
+If any one fails, the whole thing rejects immediately.
+
+Use case: Fetching user + posts + comments where all must succeed.
+
+Promise.allSettled() 📝
+
+Waits for all promises to settle (either resolved or rejected).
+
+Always returns an array of results {status: 'fulfilled'/'rejected', value/reason}.
+
+Use case: When you want all results, even if some fail (like multiple API sources, some may fail but you still want the others).
+
+Promise.race() 🏃
+
+Returns the result of the first settled promise (resolve or reject).
+
+Use case: Competing APIs where whichever responds first is used (e.g., redundant backup servers).
+
+Promise.any() 🌟
+
+Returns the result of the first successful (fulfilled) promise.
+
+If all fail, it rejects with an AggregateError.
+
+Use case: Load data from multiple mirrors/CDN servers; whichever succeeds first is used.
+
+
+
+
+Que3. .
+
+👉 Next question (Question 3):
+What happens if you use await inside a loop (like for or forEach)? What’s the difference between running them sequentially vs in parallel?
+
+Would you like me to ask it as a theory explanation or also expect you to write code?
+
+My Ans: if we use await inside a for or forEach loop. execution will get stop for each iteration. and execution will proceed once the await operation get completed. Running parallel execution means we trigger back to back async operation at same time. without finishing of first one. Generally as use case like : Suppose on user dashboard : we want to fetch weather report and user details, both are not lined to each other, so we can do parallel operation. The main benefit of using parallel execution : wait time is less. overall execution will occur fast. For end user, it looks like running multitask at one time. Sequential execution : In this approach : we wait for current operation to complete and then proceed to next one. Execution will run sequentially. like normal code execution in js. in which task move to call stack and execute sequentially. Using Async await we can do async operation sequential.
+
+
+
+
+Oue. 4: 👉 What is the difference between async/await and .then/.catch in handling promises? Which one would you prefer and why?
+
+Ans: When we use simple promise, to catch the success or fail callback we need to use .then/.catch 
+once the promise is resolved, execution comes under .then and in case of reject() , execution come in .catch. 
+
+If we are using promise for async operation inside a async function, we no need to use .then and catch for to get promise resolve or reject return. 
+For this we case try catch in async/await function. If promise get resolved, execution will come under try block, and in case of reject is call from promise function, execution will come under catch block. 
+
+-----.then/.catch
+
+Chainable style for handling promises.
+
+Can lead to callback nesting if not handled properly.
+
+
+-----async/await + try/catch
+
+Makes async code look like synchronous code.
+
+Easier to read, debug, and maintain.
+
+Error handling is done with normal try/catch.
+
+
+
+
+
+
+
+Que. 5: 🚀 Next interview question (Q5):
+👉 What happens if you forget to use await before a promise inside an async function?
+
+
+Ans:if a function is declare as async then this function will return promise. 
+
+
+An async function always returns a Promise — no matter what you return.
+
+If you return a value → JS automatically wraps it inside a resolved Promise.
+
+async function foo() {
+  return 42;
+}
+foo().then(console.log); // ✅ prints 42
+
+
+If you throw an error → it’s wrapped as a rejected Promise.
+
+async function foo() {
+  throw new Error("Oops");
+}
+foo().catch(console.error); // ❌ Error: Oops
+
+
+If you return a Promise → it just returns that Promise as-is.
+
+async function foo() {
+  return Promise.resolve("Hello");
+}
+foo().then(console.log); // ✅ prints "Hello"
+
+
+⚡ Now, answering the actual interview twist:
+👉 If you forget await, you’ll just get a Promise object, not the resolved value.
+
+Example:
+
+async function demo() {
+  let p = fetchData();  // forgot await
+  console.log(p);       // prints: Promise { <pending> }
+}
+
+
+So the code doesn’t pause for the value — instead you’re logging the promise itself.
+
+
+
+
+
+
+
+
+
+
