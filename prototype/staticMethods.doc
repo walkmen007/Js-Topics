@@ -1,0 +1,58 @@
+Static Methods in JavaScript
+
+🔹  Static methods in JS is use to create reusable methods or general utility methods. 
+Which can be use directly by class name. 
+For Example : 
+
+  Math.random(), Math.ceil(), Math.floor() etc. 
+
+🔹  All above method are defined under Math class. But we can use this across JS. 
+🔹  Static methods are typically used for utility functions that perform a task related to the class but do not require access to instance-specific data or properties.
+
+🔹. The this keyword inside a static method refers to the class constructor itself, not to an instance.
+ This allows static methods to access other static members of the class using this.
+ Static methods can also be called from within other static methods of the same class.
+ While they cannot be accessed through instantiated objects, they can be invoked from within non-static methods or constructors by using the class name.
+
+
+ 🔹 In summary, static methods provide a way to define functionality that is associated with a class as a whole, promoting code organization, reusability, and efficiency.
+ 
+ 
+ 🔹 🔹 🔹 🔹 🔹 🔹 🔹 🔹 🔹 🔹 🔹 
+
+
+🔹  We can create Static Method like: 
+
+class MyStaticClass {
+    static count = 0;
+    static increment (){
+        this.count++;
+    }
+
+    static decrement(){
+        this.count--;
+    }
+
+    static getCount(){
+        return this.count
+    }
+}
+
+We need to use static methods we can use this like: 
+MyStaticClass.increment();
+MyStaticClass.decrement();
+MyStaticClass.getCount();
+
+If we declare  method as static we cannot access that methods using class instance. 
+
+like 
+
+let newInstance = new MyStaticClass();
+newInstance.increment() is not allowed for static method or property. 
+
+We can access static method via static class name only. 
+
+
+2. Static methods can access other static property. using this. 
+
+3. 🔹 Static methods are useful for utility functions, factory methods, or operations that don't depend on instance data.

@@ -1,0 +1,307 @@
+🔥 Prototype System in JavaScript (Deep Explanation)
+1. What is a prototype?
+
+In JS, every object has an internal link to another object called its prototype.
+
+That prototype object acts like a backup lookup table for properties and methods.
+
+If you try to access a property that doesn’t exist on the object, JavaScript looks up the prototype chain.
+
+
+Example : 
+
+const obj = { name: "Ankit" };
+console.log(obj.toString); // comes from Object.prototype
+
+Here:
+
+obj → doesn’t have toString.
+
+JS looks at obj.__proto__ → which is Object.prototype.
+
+Finds toString.
+
+
+
+2. 2. The Prototype Chain
+
+It’s like inheritance:
+
+obj --> Object.prototype --> null
+
+
+Another example with arrays:
+
+[] --> Array.prototype --> Object.prototype --> null
+
+
+3. __proto__ vs prototype
+
+⚡ Most confusing interview question:
+
+obj.__proto__ → the actual prototype object of obj.
+
+Func.prototype → the object used to build new objects when new Func() is called.
+
+
+
+4. 4. Prototype inheritance
+
+You can link objects using Object.create:
+const animal = { eats: true };
+const dog = Object.create(animal);
+dog.barks = true;
+
+console.log(dog.eats); // true (via prototype)
+console.log(dog.__proto__ === animal); // true
+
+
+
+5. function Car(name){
+  this.name = name;
+}
+
+Car.prototype.drive = function(){
+  console.log(this.name + " is driving 🚗");
+};
+
+const c1 = new Car("Tesla");
+c1.drive(); // Tesla is driving 🚗
+
+
+6. Prototype Chain Lookup Cost
+
+Every property access may climb the chain. Deep chains are slower.
+So, too much prototype nesting hurts performance.
+
+
+7. Prototype and __proto__
+prototype:
+
+Exists only on functions (constructor functions & classes).
+
+Used as a template for creating objects when you call new.
+
+Whatever you put inside Func.prototype will be shared across all instances.
+
+__proto__:
+
+Exists on all objects.
+
+Points to the prototype object from which it inherits (usually the constructor’s prototype).
+function Person(name){
+  this.name = name;
+}
+
+Person.prototype.sayHi = function(){
+  console.log("Hi, I'm " + this.name);
+};
+
+const p1 = new Person("Ankit");
+
+console.log(p1.__proto__ === Person.prototype); // true ✅
+console.log(Person.prototype.constructor === Person); // true ✅
+
+
+
+Person.prototype → the shared methods for all instances.
+
+p1.__proto__ → the actual internal link for p1 to that prototype.
+
+
+3. function User() {}
+User.prototype.say = function () { console.log("A"); };
+
+const u1 = new User();
+
+User.prototype = { 
+  say() { console.log("B"); } 
+};
+
+const u2 = new User();
+
+u1.say();
+u2.say();
+
+
+
+
+Answer: 
+Step-by-step:
+
+When the function User is created, it gets a default prototype object.
+We add say = A onto that prototype.
+
+User.prototype  →  { say: "A" }
+
+
+const u1 = new User();
+
+u1.__proto__ points to the original prototype object (the one with "A").
+
+Then we replace the prototype object:
+
+User.prototype = { say() { console.log("B"); } }
+
+
+⚠️ Important: This does not affect u1 because its __proto__ still points to the old object.
+It only affects future objects created with new User().
+
+u1.__proto__ → { say: "A" }
+User.prototype → { say: "B" }
+
+
+const u2 = new User();
+
+u2.__proto__ now points to the new prototype (with "B").
+
+Calls:
+
+u1.say(); // A
+u2.say(); // B
+
+✅ Final Output:
+A
+B
+
+
+
+Que: 
+
+function Car() {}
+Car.prototype.drive = function () { console.log("Vroom"); };
+
+const c1 = new Car();
+
+Car.prototype = {
+  stop: function () { console.log("Stopped"); }
+};
+
+const c2 = new Car();
+
+c1.drive();
+c1.stop();
+c2.drive();
+c2.stop();
+
+
+Answer: Step 1 – Before reassignment
+
+Car.prototype.drive = ... adds drive to the prototype.
+
+c1 is created → its __proto__ points to the old Car.prototype (which has drive).
+
+So c1.__proto__ = { drive }.
+
+Step 2 – After reassignment
+
+Car.prototype = { stop: ... }
+⚡ Important: This creates a new object and assigns it to Car.prototype.
+
+But c1 is unaffected → it still points to the old prototype (with only drive).
+
+c2 is created after reassignment → so c2.__proto__ points to the new prototype (with only stop).
+
+So:
+
+c1.__proto__ = { drive }
+
+c2.__proto__ = { stop }
+
+Step 3 – Calls
+
+c1.drive() ✅ works → "Vroom"
+
+c1.stop() ❌ undefined (old proto doesn’t have stop) → TypeError
+
+c2.drive() ❌ undefined (new proto doesn’t have drive) → TypeError
+
+c2.stop() ✅ works → "Stopped"
+
+
+
+
+Que: 
+⚡ Next question (slightly tricky):
+What’s the difference between setting a method on Car.prototype vs setting it directly inside the constructor like this?
+
+function Car() {
+  this.drive = function() { console.log("Vroom from constructor"); };
+}
+
+
+👉 Which one is better, and why?
+
+
+Answer: 
+✅ Each Car instance gets its own copy of drive.
+
+❌ That means if you create 1000 Cars, you’ll have 1000 function objects in memory (inefficient).
+
+✅ Safer against accidental prototype overrides.
+
+
+using this: Car.prototype.drive = function() { console.log("Vroom from prototype"); };
+
+✅ All instances share the same function (memory efficient).
+
+✅ Much faster for methods that don’t need per-instance customization.
+
+❌ If you overwrite the prototype later, you might break other instances.
+
+
+
+👉 Best Practice:
+
+Use prototype methods for shared behavior.
+
+Use constructor properties only for data unique to each instance (e.g., this.color, this.speed) or when you want instance-specific behavior.
+
+💡 Interview pro-tip: If asked, say:
+
+“Putting methods on the prototype is better for memory and performance because all instances share the same function. Defining inside the constructor is only useful when you need truly instance-specific methods.”
+
+
+
+
+
+Que: Output: 
+function Car() {}
+Car.prototype.drive = function() { console.log("Vroom"); };
+
+let car1 = new Car();
+let car2 = new Car();
+
+console.log(car1.drive === car2.drive);  // ?
+
+
+Answer: true will print.
+Reason : As we have assign property using prototype on function. which will point to same memory location of assigned function. 
+So instance car1.drive and car2.drive will point to shared __proto__ reference. therefor true will print
+
+Case 2: 
+function Car() {
+  this.drive = function() { console.log("Vroom"); };
+}
+
+let car1 = new Car();
+let car2 = new Car();
+
+console.log(car1.drive === car2.drive); // false ❌
+Explanation : Each time you call new Car(), a new function object is created. Even though both do the same thing, they’re not the same in memory.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    h1{
+        font-size: 20px;
+        text-align: center;
+        margin:20px;
+    }
+    .search-box{
+        margin:30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    input[type=text]{
+        width:300px;
+        height:40px;
+        padding:8px;
+        font-size: 16px;
+        font-weight: 500;
+        border-radius: 12px;
+        border:2px solid black;
+         outline: none;
+    }
+
+    input[type=text]:focus{
+       border:2px solid green;
+       color:green;
+    }
+</style>
+<body>
+   
+    <h1>Dobouncing Demo</h1>
+
+    <div class="search-box">
+        <div>
+
+             <label>Search Box </label>
+             <input type="text" placeholder="Search" id="searchBox">
+
+        </div>
+   
+    
+
+    </div>
+
+    <script>
+    
+    let setTimoutRef;
+    function getSearchResult(callback, delay){
+        clearTimeout(setTimoutRef);
+        setTimoutRef = setTimeout(()=>{
+            callback();
+        }, delay)
+    }
+
+    function debouncing(val){
+        function callback(val){
+             console.log("API Call for Input", val)
+        }
+        return getSearchResult(()=>{callback(val)}, 1000);
+    }
+
+    document.getElementById("searchBox").addEventListener('input', (e)=>{
+        debouncing(e.target.value);
+    })
+    </script>
+    
+</body>
+</html>

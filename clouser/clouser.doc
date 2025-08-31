@@ -1,0 +1,134 @@
+1. Memory & Closures
+
+Q:
+What potential memory issues can arise from closures in long-lived applications (like SPAs in React/Angular)? How would you prevent them?
+
+Answer: 
+✅ Refined Answer (Lead Developer Level)
+
+Closures are powerful because they let functions capture variables from their outer scope. However, in long-lived applications like SPAs, this can also create memory retention issues if not managed properly.
+
+Why it happens:
+A closure keeps its referenced variables alive as long as the closure itself is reachable.
+For example, if we attach an event listener that captures large objects, but we never remove that listener, those objects remain in memory indefinitely — even if they’re no longer needed. Garbage collection won’t reclaim them because the closure still holds a reference.
+
+Common scenarios in SPAs:
+
+Event listeners not removed on unmount (React/Angular components).
+
+Async callbacks (setTimeout, setInterval, Promises) that capture stale variables.
+
+Long-lived services (Angular) where closures hold references to DOM nodes or large data.
+
+Accidental global closures (e.g., attaching closure-heavy functions to window).
+
+Mitigation strategies:
+
+Cleanup event listeners / intervals → use componentWillUnmount in React class components, or useEffect cleanup in React hooks, or Angular’s ngOnDestroy.
+
+Nullify references inside closures when no longer needed.
+
+Avoid unnecessary large captures (don’t close over entire objects when only a small property is needed).
+
+Use WeakMap / WeakRef when storing external objects in closures.
+
+
+
+
+
+Que2. 
+Q:
+Consider this classic problem:
+
+for (var i = 1; i <= 3; i++) {
+  setTimeout(() => console.log(i), 1000);
+}
+
+
+Output?
+How would you fix it so it prints 1, 2, 3?
+
+✅ Refined Answer (Lead Developer Level)
+
+In the given code:
+
+for (var i = 1; i <= 3; i++) {
+  setTimeout(() => console.log(i), 1000);
+}
+
+
+What happens:
+
+var is function-scoped (not block-scoped).
+
+By the time the setTimeout callbacks execute, the loop has already finished, and the single shared i variable now has the value 4.
+
+Therefore, the output is:
+
+4
+4
+4
+
+
+Why (closure explanation):
+Each callback forms a closure over the same i variable. Since i was declared with var, all closures point to the same memory location. By the time they run, i has incremented to 4.
+
+✅ Fixes
+
+Use let (block-scoped variable):
+
+for (let i = 1; i <= 3; i++) {
+  setTimeout(() => console.log(i), 1000);
+}
+// Output: 1, 2, 3
+
+
+Here, each iteration creates a new i binding, so each closure captures a different variable.
+
+Use an IIFE (Immediately Invoked Function Expression):
+
+for (var i = 1; i <= 3; i++) {
+  (function(j) {
+    setTimeout(() => console.log(j), 1000);
+  })(i);
+}
+
+
+The IIFE captures the current value of i in a new scope (j), so each callback closes over a different variable.
+
+Use setTimeout’s third parameter (less common, but works):
+
+for (var i = 1; i <= 3; i++) {
+  setTimeout((j) => console.log(j), 1000, i);
+}
+
+✅ Interview Takeaway
+
+The problem arises because of how closures work with var.
+
+The best modern solution is to use let or const, which provide block scope.
+
+However, showing awareness of IIFE and extra parameters demonstrates deep closure knowledge and backward compatibility thinking.
+
+
+
+que3. 👉 Question 3: Bank Account with Closures
+
+Implement a BankAccount factory function that:
+
+Takes an initial balance.
+
+Provides methods:
+
+deposit(amount) → increases balance.
+
+withdraw(amount) → decreases balance (but not below 0).
+
+getBalance() → returns current balance.
+
+The balance should not be directly accessible from outside.
+
+Example usage:
+
+
+

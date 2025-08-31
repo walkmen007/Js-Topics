@@ -1,0 +1,95 @@
+⚖️ Microtask vs Macrotask
+
+Macrotask (Task Queue) → setTimeout, setInterval, setImmediate (Node), I/O callbacks.
+
+Microtask (Job Queue) → Promises (then/catch/finally), await, queueMicrotask, MutationObserver.
+
+👉 Microtasks always run before the next macrotask.
+
+
+🔹 What is queueMicrotask?
+
+queueMicrotask is a built-in browser API (also in Node.js).
+
+It adds a function to the microtask queue.
+
+Microtasks run immediately after the current synchronous code finishes, before any macrotasks like setTimeout, setInterval, I/O, etc.
+
+🔹 Why use it?
+
+Sometimes you want to schedule something right after the current call stack finishes, but you don’t want to wait for the slower macrotask queue.
+
+
+✅ Key Points:
+
+queueMicrotask → schedules a microtask.
+
+Runs before macrotasks like setTimeout.
+
+Useful when you want to defer execution just after current code but still run it quickly.
+
+It’s lighter and faster than setTimeout(..., 0) because it avoids the event loop’s macrotask delay.
+
+
+
+Que: What’s the difference between queueMicrotask() and setTimeout(fn, 0) in terms of execution order?
+
+Answer : In js execution cycle, execution of code decide by call stack, microtask queu and macrotask queu. 
+when normal execution of call stack finishes, then execution task will be pick from microtask queu and after it empty, macro task queu will be picked. 
+sertTimeout function comes under macrotak queu and given less priority then queueMicrotask() as it comes under microtask. So in case we dont want to wait for execution we put the code in queueMicrotask. 
+
+For example in case  input validation in form, on every input enter we need to validate user input immediately, if we put validation code in setTimeout then it will trigger after screen rerender run, but if we put the validation login in queueMicrotask it will run immediately.
+
+Simply in the case where we do not want for so long for async setTimout function to finish execution, spacially when settimeout schedule for 0 sec we can use queueMicrotask
+
+
+
+Chat GPT : 
+
+That’s a solid explanation 👌 — you got the main distinction right:
+
+✅ queueMicrotask() → microtask queue (runs immediately after current synchronous code, before rendering, and before any macrotasks).
+
+✅ setTimeout(fn, 0) → macrotask queue (runs after microtasks, usually after a render).
+
+Your form validation example is a great practical use case 👍
+
+🔹 Small refinement:
+
+Even setTimeout(fn, 0) never runs immediately — it waits until the next macrotask tick (minimum ~4ms in browsers, per spec).
+
+queueMicrotask() is guaranteed to run before any I/O, rendering, or timers.
+
+
+
+
+Que: If you put a queueMicrotask() inside a microtask (like inside a .then()), when will it run?
+
+Ans : ✅ Nice — you’re almost there! Let me tighten it up a bit:
+
+When you schedule a new queueMicrotask() from inside another microtask (like a .then()):
+
+It does not run immediately inline.
+
+Instead, it gets queued at the end of the current microtask queue.
+
+So all already-scheduled microtasks (that were in the queue before) will finish first, and then your newly added microtask will run — but still before any macrotask (like setTimeout).
+
+Example : Promise.resolve().then(() => {
+  console.log("Microtask 1");
+  queueMicrotask(() => console.log("Nested Microtask"));
+});
+
+Promise.resolve().then(() => console.log("Microtask 2"));
+
+setTimeout(() => console.log("Macrotask"), 0);
+
+
+Output: 
+Microtask 1
+Microtask 2
+Nested Microtask
+Macrotask
+
+
+

@@ -1,0 +1,368 @@
+🧵 The Event Loop in JavaScript
+
+JavaScript is single-threaded → it can only do one thing at a time.
+So, how does it handle async stuff like setTimeout, promises, fetch calls, etc.?
+👉 With the Event Loop.
+
+Think of it like this:
+
+Call Stack → where functions execute line by line.
+
+Task Queue (MacroTask Queue) → tasks from things like setTimeout, setInterval, DOM events, etc.
+
+MicroTask Queue → tasks from Promises (.then, .catch, await) and queueMicrotask.
+
+⚡ The Event Loop keeps checking:
+
+Is the Call Stack empty?
+
+If yes → run all Microtasks first (Promises).
+
+Then take one task from MacroTask Queue (like setTimeout) and run it.
+
+Repeat forever 🔁.
+
+⚖️ Microtask vs Macrotask
+
+Macrotask (Task Queue) → setTimeout, setInterval, setImmediate (Node), I/O callbacks.
+
+Microtask (Job Queue) → Promises (then/catch/finally), await, queueMicrotask, MutationObserver.
+
+👉 Microtasks always run before the next macrotask.
+
+
+🔹 What is queueMicrotask?
+
+queueMicrotask is a built-in browser API (also in Node.js).
+
+It adds a function to the microtask queue.
+
+Microtasks run immediately after the current synchronous code finishes, before any macrotasks like setTimeout, setInterval, I/O, etc.
+
+🔹 Why use it?
+
+Sometimes you want to schedule something right after the current call stack finishes, but you don’t want to wait for the slower macrotask queue.
+
+
+✅ Key Points:
+
+queueMicrotask → schedules a microtask.
+
+Runs before macrotasks like setTimeout.
+
+Useful when you want to defer execution just after current code but still run it quickly.
+
+It’s lighter and faster than setTimeout(..., 0) because it avoids the event loop’s macrotask delay.
+
+
+
+Que: What’s the difference between queueMicrotask() and setTimeout(fn, 0) in terms of execution order?
+
+Answer : In js execution cycle, execution of code decide by call stack, microtask queu and macrotask queu. 
+when normal execution of call stack finishes, then execution task will be pick from microtask queu and after it empty, macro task queu will be picked. 
+sertTimeout function comes under macrotak queu and given less priority then queueMicrotask() as it comes under microtask. So in case we dont want to wait for execution we put the code in queueMicrotask. 
+
+For example in case  input validation in form, on every input enter we need to validate user input immediately, if we put validation code in setTimeout then it will trigger after screen rerender run, but if we put the validation login in queueMicrotask it will run immediately.
+
+Simply in the case where we do not want for so long for async setTimout function to finish execution, spacially when settimeout schedule for 0 sec we can use queueMicrotask
+
+
+
+Chat GPT : 
+
+That’s a solid explanation 👌 — you got the main distinction right:
+
+✅ queueMicrotask() → microtask queue (runs immediately after current synchronous code, before rendering, and before any macrotasks).
+
+✅ setTimeout(fn, 0) → macrotask queue (runs after microtasks, usually after a render).
+
+Your form validation example is a great practical use case 👍
+
+🔹 Small refinement:
+
+Even setTimeout(fn, 0) never runs immediately — it waits until the next macrotask tick (minimum ~4ms in browsers, per spec).
+
+queueMicrotask() is guaranteed to run before any I/O, rendering, or timers.
+
+
+
+
+
+📝 Example
+console.log("1");
+
+setTimeout(() => console.log("2"), 0);
+
+Promise.resolve().then(() => console.log("3"));
+
+console.log("4");
+
+
+Execution:
+
+"1" → sync
+
+"4" → sync
+
+Promise .then → microtask → "3"
+
+setTimeout → macrotask → "2"
+
+✅ Output:
+
+1
+4
+3
+2
+
+🔥 Why this matters?
+
+Because Promises & async/await are microtasks, they get priority over timers.
+That’s why sometimes your setTimeout(..., 0) doesn’t run immediately — promises cut in line 😅.
+
+
+
+Que: Out put the below code snippet: 
+
+console.log("A");
+
+setTimeout(() => {
+  console.log("B");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("C");
+});
+
+async function test() {
+  console.log("D");
+  await Promise.resolve();
+  console.log("E");
+}
+
+test();
+
+console.log("F");
+
+
+
+
+Answer : A
+D
+F
+C
+E
+B
+
+Explanation : 
+🎯 Correct again!
+
+Let’s walk through it step by step to be crystal clear:
+
+console.log("A") → prints immediately.
+👉 Output: A
+
+setTimeout(..., 0) → goes into macro task queue, will run later.
+
+Promise.resolve().then(...) → .then() callback goes into microtask queue.
+
+test() is called:
+
+Logs "D" immediately.
+
+Encounters await Promise.resolve() → this pauses the function, and schedules the continuation (console.log("E")) into the microtask queue.
+
+👉 Output so far: A D
+
+console.log("F") → prints immediately.
+👉 Output: A D F
+
+Now, microtasks run (before any macrotask like setTimeout):
+
+First: "C" from the .then().
+
+Then: "E" from the async/await continuation.
+👉 Output: A D F C E
+
+Finally, the macro task queue runs → "B" from setTimeout.
+👉 Final Output: A D F C E B
+
+
+
+
+Que: Output order of below program: 
+
+console.log("1");
+
+setTimeout(() => {
+  console.log("2");
+  Promise.resolve().then(() => {
+    console.log("3");
+  });
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("4");
+  setTimeout(() => {
+    console.log("5");
+  }, 0);
+});
+
+console.log("6");
+
+
+Answer : 
+1 6 4 2 3 5
+
+Explaination : 
+Step-by-step execution:
+
+Synchronous runs first (call stack):
+
+"1"
+
+"6"
+
+👉 Output so far:
+1, 6
+
+Microtask queue (Promises) before any macrotasks:
+
+The .then for Promise.resolve() runs → prints "4".
+
+Inside that .then, a setTimeout(() => console.log("5")) is scheduled (macro task).
+
+👉 Output so far:
+1, 6, 4
+
+Now Event Loop picks up macrotasks (setTimeout) in order:
+
+First setTimeout (the one with "2"):
+
+Prints "2".
+
+Schedules a microtask (Promise → "3").
+
+Immediately after "2", microtasks run → prints "3".
+
+👉 Output so far:
+1, 6, 4, 2, 3
+
+Next macrotask (setTimeout(() => console.log("5"))):
+
+Prints "5".
+
+👉 Final Output:
+1, 6, 4, 2, 3, 5
+
+
+
+
+Que: 
+
+console.log("A");
+
+async function fetchData() {
+  console.log("B");
+  await Promise.resolve();
+  console.log("C");
+}
+
+setTimeout(() => {
+  console.log("D");
+}, 0);
+
+fetchData();
+
+console.log("E");
+
+
+Answer : 
+📌 Execution order:
+
+A (sync)
+
+B (sync inside fetchData)
+
+E (sync after fetchData is called)
+
+C (microtask continuation of await)
+
+D (macrotask setTimeout)
+
+
+
+
+Que: 
+console.log("1");   // sync → prints 1
+
+setTimeout(() => {
+  console.log("2"); // macrotask
+}, 0);
+
+async function test() {
+  console.log("3"); // sync inside async → prints 3
+
+  await Promise.resolve(); // microtask queued
+  console.log("4");        // runs in microtask after sync ends
+
+  setTimeout(() => {
+    console.log("5"); // macrotask
+  }, 0);
+
+  await null; // microtask again
+  console.log("6");  // runs in second microtask
+}
+
+test();
+
+console.log("7"); // sync → prints 7
+
+
+Output: 
+1
+3
+7
+4
+6
+2
+5
+
+
+
+
+Que : 
+
+console.log("A");
+
+setTimeout(() => console.log("B"), 0);
+
+Promise.resolve().then(() => console.log("C"));
+
+(async function () {
+  console.log("D");
+  await null;
+  console.log("E");
+})();
+
+console.log("F");
+
+
+
+Answer : 
+Execution order:
+
+A (sync)
+
+D (sync inside async fn before await)
+
+F (sync)
+
+C (microtask from Promise.resolve().then)
+
+E (microtask from async/await continuation)
+
+B (macrotask from setTimeout)
+
+
+
