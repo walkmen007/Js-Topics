@@ -12,13 +12,13 @@
 let promise1 = new Promise((resolve, reject)=>{
     setTimeout(()=>{
        resolve( '🍎 Apple');
-    }, 1000);
+    }, 3000);
 });
 
 let promise2 = new Promise((resolve, reject)=>{
     setTimeout(()=>{
        resolve( '🍌 Banana');
-    }, 2000);
+    }, 1000);
     
 });
 
