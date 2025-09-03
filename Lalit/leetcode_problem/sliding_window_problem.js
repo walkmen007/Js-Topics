@@ -400,3 +400,39 @@ var numOfSubarrays = function(arr, k, threshold) {
     }
     return count
 };
+
+// question 11: Find subarray with k distinct elements and print sum
+// Find all subarrays that contain exactly k distinct elements
+
+// Print their sum
+// links: https://leetcode.com/problems/find-subarray-with-given-sum/description/
+// Approach (Sliding Window + HashMap)
+
+// Use a sliding window to track distinct elements.
+
+// Expand right pointer, add elements into a map (count).
+
+// Shrink left pointer if distinct elements exceed k.
+
+// Whenever distinct count = k, record that subarray’s sum.
+
+function subarraysWithKDistinctSum(arr, k) {
+  let result = [];
+  let n = arr.length;
+
+  for (let i = 0; i < n; i++) {
+    let set = new Set();
+    let sum = 0;
+    for (let j = i; j < n; j++) {
+      set.add(arr[j]);
+      sum += arr[j];
+
+      if (set.size === k) {
+        result.push(sum);
+      } else if (set.size > k) {
+        break; // too many distinct, stop extending
+      }
+    }
+  }
+  return result;
+}
