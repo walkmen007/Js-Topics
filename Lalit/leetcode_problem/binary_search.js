@@ -211,17 +211,17 @@ var search = function(nums, target) {
         const mid = Math.floor((left + right)/ 2);
         if (nums[mid] === target) {
             return mid
-        } else if (nums[left] <= nums[mid]) {
+        } else if (nums[left] <= nums[mid]) {  //   Left half is sorted
             if (nums[left] <= target && target < nums[mid]) {
-                right = mid - 1;
+                right = mid - 1;  // target is in left sorted half
             } else {
-                left = mid + 1;
+                left = mid + 1; // target is in right half
             }
-        } else {
+        } else {  // Right half is sorted
             if (nums[right] >= target && target > nums[mid] ) {
-                left = mid + 1
+                left = mid + 1  // target is in right sorted half
             } else {
-                right = mid -1
+                right = mid -1  // target is in left half
             }
         }
     }
@@ -231,6 +231,7 @@ var search = function(nums, target) {
 
 //Question 9: Search in Rotated Sorted Array II
 // links: https://leetcode.com/problems/search-in-rotated-sorted-array-ii/description/
+// There is an integer array nums sorted in non-decreasing order (not necessarily with distinct values).
 
 var search = function(nums, target) {
     let left = 0, right = nums.length -1;
@@ -271,10 +272,10 @@ var findMin = function(nums) {
 
     while (left < right) {
         let mid = Math.floor((left + right)/2);
-        if ( nums[mid] > nums[right]) {
+        if ( nums[mid] > nums[right]) { // Minimum must be on the right
             left = mid  + 1
         } else {
-            right = mid 
+            right = mid  // Minimum must be on the left
         }
     }
     return nums[left];
@@ -309,10 +310,10 @@ var findPeakElement = function(nums) {
 
     while (left < right) {
         let mid = Math.floor((left + right)/2);
-        if ( nums[mid] > nums[mid + 1]) {
+        if ( nums[mid] > nums[mid + 1]) {  // Peak must be on the left
             right = mid
         } else {
-            left = mid + 1
+            left = mid + 1  // Peak must be on the right
         }
     }
     return left;
@@ -325,7 +326,7 @@ var peakIndexInMountainArray = function(arr) {
     let left = 0, right = arr.length - 1;
     while (left < right) {
         const mid = Math.floor((left + right) / 2);
-        if (arr[mid] < arr[mid + 1]) {  
+        if (arr[mid] < arr[mid + 1]) {  // Peak must be on the left
             left = mid + 1
         } else {
             right = mid
@@ -373,7 +374,6 @@ var shipWithinDays = function(weights, days) {
 
     while (left <= right) {
         let mid = Math.floor((left + right)/2);
-        let totalDays = 0;
 
         // check how many days needed with this capacity
         let needDays = 1, currentLoad = 0;

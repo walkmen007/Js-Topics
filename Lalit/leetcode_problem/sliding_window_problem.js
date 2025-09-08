@@ -35,7 +35,6 @@ var findMaxAverage = function(nums, k) {
     if (k=== 0) return 0;
     if (k === n) return (nums.reduce((a, b) => a + b, 0) / n);
 
-    let maxAvg =0;
     let sum = 0;
     for (let i =0; i< k; i++) {
         sum += nums[i]
