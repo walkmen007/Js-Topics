@@ -173,3 +173,118 @@ module.exports = function rateLimiterMiddleware(req, res, next) {
       res.status(429).json({ error: 'Too Many Requests', retry_after_seconds: retrySec });
     });
 };
+
+
+const express = require("express");
+const app = express();
+
+const WINDOW_SIZE = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 5; // 5 requests per window per IP
+
+// Store request timestamps per IP
+const requestsMap = new Map();
+
+function slidingWindowRateLimiter(req, res, next) {
+  // extract key: prefer authenticated user id > api key > ip
+  const userId = req.user && req.user.id;
+  const apiKey = req.headers['x-api-key'];
+  const ip = (req.headers['x-forwarded-for'] || req.ip).split(',')[0].trim();
+
+  const key = userId ? `user:${userId}` : apiKey ? `key:${apiKey}` : `ip:${ip}`;
+
+  const currentTime = Date.now();
+
+  if (!requestsMap.has(key)) {
+    requestsMap.set(key, [currentTime]);
+    return next();
+  }
+
+  // Get timestamps for this key
+  let timestamps = requestsMap.get(key);
+
+  // Remove timestamps older than window
+  timestamps = timestamps.filter(ts => currentTime - ts < WINDOW_SIZE);
+
+  if (timestamps.length >= MAX_REQUESTS) {
+    return res.status(429).json({
+      message: "Too many requests, please try again later.",
+    });
+  }
+
+  // Add current request timestamp
+  timestamps.push(currentTime);
+  requestsMap.set(key, timestamps);
+
+  next();
+}
+
+app.use(slidingWindowRateLimiter);
+
+app.get("/", (req, res) => {
+  res.send("✅ Request allowed");
+});
+
+app.listen(3000, () => console.log("Server running on port 3000"));
+
+
+
+
+
+
+const express = require("express");
+const app = express();
+
+const WINDOW_SIZE = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 5; // 5 requests per window per IP
+
+// Store counters per IP
+// Structure: { prevWindowStart, prevCount, currCount }
+const requestsMap = new Map();
+
+function slidingWindowCounter(req, res, next) {
+  const ip = req.ip;
+  const currentTime = Date.now();
+  const currentWindowStart = Math.floor(currentTime / WINDOW_SIZE) * WINDOW_SIZE;
+
+  if (!requestsMap.has(ip)) {
+    requestsMap.set(ip, {
+      prevWindowStart: currentWindowStart,
+      prevCount: 0,
+      currCount: 1,
+    });
+    return next();
+  }
+
+  let data = requestsMap.get(ip);
+
+  if (data.prevWindowStart === currentWindowStart) {
+    // Same window → increase counter
+    data.currCount++;
+  } else {
+    // Shift windows
+    data.prevWindowStart = currentWindowStart;
+    data.prevCount = data.currCount;
+    data.currCount = 1;
+  }
+
+  // Sliding window calculation
+  const elapsed = (currentTime - data.prevWindowStart) / WINDOW_SIZE;
+  const weightedCount = data.prevCount * (1 - elapsed) + data.currCount;
+
+  if (weightedCount > MAX_REQUESTS) {
+    return res.status(429).json({
+      message: "Too many requests, please try again later.",
+    });
+  }
+
+  requestsMap.set(ip, data);
+  next();
+}
+
+app.use(slidingWindowCounter);
+
+app.get("/", (req, res) => {
+  res.send("✅ Request allowed");
+});
+
+app.listen(3000, () => console.log("Server running on port 3000"));
